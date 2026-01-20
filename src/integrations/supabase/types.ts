@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          created_at: string
+          due_date: string | null
+          file_name: string
+          file_path: string
+          id: string
+          student_id: string | null
+          teacher_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          due_date?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          student_id?: string | null
+          teacher_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          student_id?: string | null
+          teacher_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students_teacher_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          reason: string
+          start_date: string
+          status: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          reason: string
+          start_date: string
+          status?: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          reason?: string
+          start_date?: string
+          status?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -40,6 +118,51 @@ export type Database = {
           sender_id?: string | null
         }
         Relationships: []
+      }
+      notes: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          student_id: string | null
+          teacher_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          student_id?: string | null
+          teacher_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          student_id?: string | null
+          teacher_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students_teacher_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -70,6 +193,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          id: string
+          student_id: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          student_id: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          student_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students_teacher_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
