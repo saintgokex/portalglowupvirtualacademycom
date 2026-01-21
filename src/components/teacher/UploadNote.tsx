@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Upload, File, X } from 'lucide-react';
+import { validateFile, getFileExtension, getAcceptString, MAX_FILE_SIZE_MB } from '@/lib/fileValidation';
 
 interface StudentOption {
   id: string;
@@ -50,6 +51,15 @@ export function UploadNote() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file before accepting
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
       setSelectedFile(file);
     }
   };
@@ -74,8 +84,13 @@ export function UploadNote() {
     setLoading(true);
 
     try {
-      // Upload file to storage
-      const fileExt = selectedFile.name.split('.').pop();
+      // Upload file to storage with sanitized extension
+      const fileExt = getFileExtension(selectedFile.name);
+      if (!fileExt) {
+        toast.error('Invalid file extension');
+        setLoading(false);
+        return;
+      }
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
@@ -155,7 +170,7 @@ export function UploadNote() {
                 type="file"
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                accept={getAcceptString()}
               />
               {selectedFile ? (
                 <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg">
