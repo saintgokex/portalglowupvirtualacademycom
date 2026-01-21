@@ -77,8 +77,8 @@ export function TeacherOverview() {
       {/* Header */}
       <div className="space-y-1">
         <h2 className="text-xl font-semibold">
-          <span className="text-primary">BRINT</span>
-          <span className="text-emerald-500">ONLINE SCHOOL</span>
+          <span className="text-primary">GLOWUP</span>
+          <span className="text-emerald-500"> VIRTUAL ACADEMY</span>
         </h2>
         <p className="text-sm text-muted-foreground">online school management platform</p>
       </div>
