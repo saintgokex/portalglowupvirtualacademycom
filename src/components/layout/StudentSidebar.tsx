@@ -54,10 +54,10 @@ export function StudentSidebar({ activeTab, onTabChange }: StudentSidebarProps) 
               key={item.id}
               onClick={() => onTabChange(item.id)}
               className={cn(
-                'flex w-full flex-col md:flex-row items-center gap-1 md:gap-3 rounded-lg px-2 md:px-3 py-3 md:py-2.5 text-xs md:text-sm font-medium transition-colors',
+                'flex w-full flex-col md:flex-row items-center gap-1 md:gap-3 rounded-lg px-2 md:px-3 py-3 md:py-2.5 text-xs md:text-sm font-medium transition-colors border-l-4',
                 isActive 
-                  ? 'bg-primary/20 text-primary border-l-4 border-primary' 
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground border-l-4 border-transparent'
+                  ? 'bg-sidebar-foreground text-sidebar border-primary' 
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground border-transparent'
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />
