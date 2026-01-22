@@ -72,7 +72,7 @@ export function StudentSidebar({ activeTab, onTabChange }: StudentSidebarProps) 
         <Button
           variant="ghost"
           onClick={signOut}
-          className="w-full justify-center md:justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground"
+          className="w-full justify-center md:justify-start text-sidebar-foreground/70 hover:bg-sidebar-foreground hover:text-sidebar"
         >
           <LogOut className="h-4 w-4 md:mr-2" />
           <span className="hidden md:inline">Logout</span>
