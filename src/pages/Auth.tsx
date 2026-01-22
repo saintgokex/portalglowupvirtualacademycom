@@ -10,7 +10,7 @@ import { GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Auth() {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, hasRole } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Login form state
@@ -31,6 +31,14 @@ export default function Auth() {
   }
 
   if (user) {
+    // Redirect based on role
+    if (hasRole('superadmin')) {
+      return <Navigate to="/admin" replace />;
+    }
+    if (hasRole('student')) {
+      return <Navigate to="/student" replace />;
+    }
+    // Default to teacher dashboard
     return <Navigate to="/dashboard" replace />;
   }
 
