@@ -58,8 +58,8 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
               className={cn(
                 'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive 
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                  ? 'bg-sidebar-foreground text-sidebar' 
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground'
               )}
             >
               <Icon className="h-5 w-5" />
@@ -88,7 +88,7 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
             variant="ghost"
             size="icon"
             onClick={signOut}
-            className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            className="text-sidebar-foreground/70 hover:bg-sidebar-foreground hover:text-sidebar"
           >
             <LogOut className="h-4 w-4" />
           </Button>

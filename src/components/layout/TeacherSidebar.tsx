@@ -60,8 +60,8 @@ export function TeacherSidebar({ activeTab, onTabChange }: TeacherSidebarProps) 
               className={cn(
                 'flex w-full flex-col md:flex-row items-center gap-1 md:gap-3 rounded-lg px-2 md:px-3 py-3 md:py-2.5 text-xs md:text-sm font-medium transition-colors',
                 isActive 
-                  ? 'bg-emerald-500/20 text-emerald-400 border-l-4 border-emerald-500' 
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground border-l-4 border-transparent'
+                  ? 'bg-sidebar-foreground text-sidebar border-l-4 border-primary' 
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground border-l-4 border-transparent'
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />
@@ -76,7 +76,7 @@ export function TeacherSidebar({ activeTab, onTabChange }: TeacherSidebarProps) 
         <Button
           variant="ghost"
           onClick={signOut}
-          className="w-full justify-center md:justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground"
+          className="w-full justify-center md:justify-start text-sidebar-foreground/70 hover:bg-sidebar-foreground hover:text-sidebar"
         >
           <LogOut className="h-4 w-4 md:mr-2" />
           <span className="hidden md:inline">Logout</span>
