@@ -138,6 +138,30 @@ export function ScheduleSession() {
 
       if (error) throw error;
 
+      // Send notification to student
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('user_id, name')
+        .eq('id', selectedStudent)
+        .single();
+
+      if (studentData?.user_id) {
+        const formattedDate = new Date(scheduledAt).toLocaleString();
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: studentData.user_id,
+              type: 'session',
+              title: 'Session Scheduled',
+              message: `A new session "${title}" has been scheduled for ${formattedDate}.${meetLink ? ' Google Meet link is available.' : ''}`,
+              data: { sessionTitle: title, scheduledAt, meetLink }
+            }
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
+      }
+
       toast.success('Session scheduled successfully');
       
       // Reset form

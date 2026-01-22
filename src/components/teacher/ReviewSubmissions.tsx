@@ -155,21 +155,33 @@ export function ReviewSubmissions() {
         .eq('user_id', user?.id)
         .single();
 
-      // Send notification
-      try {
-        await supabase.functions.invoke('send-notification', {
-          body: {
-            type: 'feedback',
-            submissionId: selectedSubmission.id,
-            assignmentTitle: selectedSubmission.assignment.title,
-            teacherName: profile?.display_name || 'Your teacher',
-            feedback: feedback || undefined,
-            status: newStatus
-          }
-        });
-      } catch (notifError) {
-        console.error('Notification error:', notifError);
-        // Don't fail the review if notification fails
+      // Get the student's user_id for the notification
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('user_id')
+        .eq('id', selectedSubmission.student_id)
+        .single();
+
+      // Send notification to student
+      if (studentData?.user_id) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: studentData.user_id,
+              type: 'feedback',
+              title: 'Feedback Received',
+              message: `Your submission for "${selectedSubmission.assignment.title}" has been ${newStatus === 'reviewed' ? 'reviewed and approved' : 'reviewed and needs revision'}.${feedback ? ` Feedback: ${feedback.substring(0, 100)}...` : ''}`,
+              data: {
+                submissionId: selectedSubmission.id,
+                assignmentTitle: selectedSubmission.assignment.title,
+                status: newStatus,
+                feedback: feedback || null
+              }
+            }
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
       }
 
       toast.success(`Submission marked as ${newStatus === 'reviewed' ? 'reviewed' : 'needs revision'}`);
