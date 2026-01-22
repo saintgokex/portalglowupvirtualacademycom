@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Download, Calendar, FileText, Upload, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Download, Calendar, FileText, Upload, CheckCircle, Clock, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { validateFile, sanitizeFilename, getAcceptString } from '@/lib/fileValidation';
 
@@ -26,6 +26,7 @@ interface Submission {
   feedback: string | null;
   submitted_at: string;
   file_name: string;
+  file_path: string;
 }
 
 export function StudentAssignments() {
@@ -38,6 +39,9 @@ export function StudentAssignments() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [submissionToDelete, setSubmissionToDelete] = useState<{ submission: Submission; assignmentTitle: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -76,7 +80,7 @@ export function StudentAssignments() {
           const assignmentIds = assignmentsData.map(a => a.id);
           const { data: submissionsData } = await supabase
             .from('submissions')
-            .select('id, assignment_id, status, feedback, submitted_at, file_name')
+            .select('id, assignment_id, status, feedback, submitted_at, file_name, file_path')
             .eq('student_id', student.id)
             .in('assignment_id', assignmentIds);
 
@@ -206,6 +210,37 @@ export function StudentAssignments() {
     }
   };
 
+  const confirmDeleteSubmission = (submission: Submission, assignmentTitle: string) => {
+    setSubmissionToDelete({ submission, assignmentTitle });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSubmission = async () => {
+    if (!submissionToDelete) return;
+    setDeleting(true);
+
+    try {
+      // Delete file from storage
+      await supabase.storage.from('submissions').remove([submissionToDelete.submission.file_path]);
+
+      // Delete submission record
+      const { error } = await supabase
+        .from('submissions')
+        .delete()
+        .eq('id', submissionToDelete.submission.id);
+
+      if (error) throw error;
+
+      toast.success('Submission deleted');
+      setDeleteDialogOpen(false);
+      fetchAssignments();
+    } catch (error) {
+      toast.error('Failed to delete submission');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const getDueStatus = (dueDate: string | null) => {
     if (!dueDate) return null;
     const due = new Date(dueDate);
@@ -328,6 +363,16 @@ export function StudentAssignments() {
                           Submit
                         </Button>
                       )}
+                      {submission?.status === 'submitted' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => confirmDeleteSubmission(submission, assignment.title)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                       {submission?.status === 'needs_revision' && (
                         <Button
                           size="sm"
@@ -382,6 +427,26 @@ export function StudentAssignments() {
               </p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Submission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete your submission for "{submissionToDelete?.assignmentTitle}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteSubmission} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

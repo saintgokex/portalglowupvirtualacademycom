@@ -7,7 +7,9 @@ import {
   CalendarOff,
   MessageSquare,
   LogOut,
-  ClipboardCheck
+  ClipboardCheck,
+  Calendar,
+  FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,9 +24,11 @@ interface TeacherSidebarProps {
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'review-submissions', label: 'Review Submissions', icon: ClipboardCheck },
+  { id: 'schedule-session', label: 'Schedule Session', icon: Calendar },
   { id: 'upload-report', label: 'Upload Report', icon: FileUp },
   { id: 'upload-note', label: 'Upload Note', icon: StickyNote },
   { id: 'upload-assignment', label: 'Upload Assignment', icon: ClipboardList },
+  { id: 'manage-uploads', label: 'Manage Uploads', icon: FolderOpen },
   { id: 'leave-apply', label: 'Leave Apply', icon: CalendarOff },
   { id: 'message-admin', label: 'Message Admin', icon: MessageSquare },
 ];

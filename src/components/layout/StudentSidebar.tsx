@@ -5,6 +5,7 @@ import {
   StickyNote, 
   ClipboardList,
   Users,
+  Calendar,
   LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ const navItems = [
   { id: 'assignments', label: 'Assignments', icon: ClipboardList },
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'reports', label: 'Reports', icon: FileText },
+  { id: 'timetable', label: 'Timetable', icon: Calendar },
   { id: 'teachers', label: 'My Teachers', icon: Users },
 ];
 

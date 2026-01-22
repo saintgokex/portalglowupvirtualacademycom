@@ -6,8 +6,8 @@ import { StudentOverview } from '@/components/student/StudentOverview';
 import { StudentAssignments } from '@/components/student/StudentAssignments';
 import { StudentNotes } from '@/components/student/StudentNotes';
 import { StudentReports } from '@/components/student/StudentReports';
+import { StudentTimetable } from '@/components/student/StudentTimetable';
 import { StudentTeachers } from '@/components/student/StudentTeachers';
-
 export default function StudentPortal() {
   const { user, loading, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -45,6 +45,8 @@ export default function StudentPortal() {
         return <StudentNotes />;
       case 'reports':
         return <StudentReports />;
+      case 'timetable':
+        return <StudentTimetable />;
       case 'teachers':
         return <StudentTeachers />;
       default:

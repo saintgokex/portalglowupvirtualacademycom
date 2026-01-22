@@ -9,6 +9,8 @@ import { UploadAssignment } from '@/components/teacher/UploadAssignment';
 import { LeaveApply } from '@/components/teacher/LeaveApply';
 import { MessageAdmin } from '@/components/teacher/MessageAdmin';
 import { ReviewSubmissions } from '@/components/teacher/ReviewSubmissions';
+import { ScheduleSession } from '@/components/teacher/ScheduleSession';
+import { ManageUploads } from '@/components/teacher/ManageUploads';
 
 export default function Dashboard() {
   const { user, loading, hasRole } = useAuth();
@@ -37,12 +39,16 @@ export default function Dashboard() {
         return <TeacherOverview />;
       case 'review-submissions':
         return <ReviewSubmissions />;
+      case 'schedule-session':
+        return <ScheduleSession />;
       case 'upload-report':
         return <UploadReport />;
       case 'upload-note':
         return <UploadNote />;
       case 'upload-assignment':
         return <UploadAssignment />;
+      case 'manage-uploads':
+        return <ManageUploads />;
       case 'leave-apply':
         return <LeaveApply />;
       case 'message-admin':
