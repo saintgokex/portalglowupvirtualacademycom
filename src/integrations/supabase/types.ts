@@ -287,6 +287,59 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          feedback: string | null
+          file_name: string
+          file_path: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          student_id: string
+          submitted_at: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          feedback?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          student_id: string
+          submitted_at?: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          feedback?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          student_id?: string
+          submitted_at?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
