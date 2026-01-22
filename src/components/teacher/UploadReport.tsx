@@ -117,6 +117,35 @@ export function UploadReport() {
 
       if (dbError) throw dbError;
 
+      // Send notification to student
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('user_id')
+        .eq('id', selectedStudent)
+        .single();
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (studentData?.user_id) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: studentData.user_id,
+              type: 'report',
+              title: 'New Report Available',
+              message: `${profile?.display_name || 'Your teacher'} has uploaded a new report for you.${description ? ` Description: ${description.substring(0, 100)}` : ''}`,
+              data: { description }
+            }
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
+      }
+
       toast.success('Report uploaded successfully');
       
       // Reset form

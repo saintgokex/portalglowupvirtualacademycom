@@ -118,6 +118,37 @@ export function UploadAssignment() {
 
       if (dbError) throw dbError;
 
+      // Send notification to student if one is selected
+      if (selectedStudent) {
+        const { data: studentData } = await supabase
+          .from('students')
+          .select('user_id, name')
+          .eq('id', selectedStudent)
+          .single();
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+
+        if (studentData?.user_id) {
+          try {
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                user_id: studentData.user_id,
+                type: 'assignment',
+                title: 'New Assignment',
+                message: `You have a new assignment "${title}" from ${profile?.display_name || 'your teacher'}.${dueDate ? ` Due: ${new Date(dueDate).toLocaleDateString()}` : ''}`,
+                data: { assignmentTitle: title, dueDate }
+              }
+            });
+          } catch (notifError) {
+            console.error('Notification error:', notifError);
+          }
+        }
+      }
+
       toast.success('Assignment uploaded successfully');
       
       // Reset form

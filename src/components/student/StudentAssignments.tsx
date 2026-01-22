@@ -185,15 +185,19 @@ export function StudentAssignments() {
       try {
         await supabase.functions.invoke('send-notification', {
           body: {
+            user_id: selectedAssignment.teacher_id,
             type: 'submission',
-            submissionId: submissionData.id,
-            assignmentTitle: selectedAssignment.title,
-            studentName: student?.name || 'A student'
+            title: 'New Submission',
+            message: `${student?.name || 'A student'} has submitted their work for "${selectedAssignment.title}".`,
+            data: {
+              submissionId: submissionData.id,
+              assignmentTitle: selectedAssignment.title,
+              studentName: student?.name
+            }
           }
         });
       } catch (notifError) {
         console.error('Notification error:', notifError);
-        // Don't fail submission if notification fails
       }
 
       toast.success('Assignment submitted successfully!');

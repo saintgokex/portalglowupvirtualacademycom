@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Users, FileUp, ClipboardList, CalendarOff } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
+import { RecentNotices } from '@/components/notifications/RecentNotices';
 
 interface StudentData {
   id: string;
@@ -106,6 +107,9 @@ export function TeacherOverview() {
           icon={CalendarOff}
         />
       </div>
+
+      {/* Recent Notices */}
+      <RecentNotices />
 
       {/* Recent Students */}
       <Card>

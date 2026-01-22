@@ -112,6 +112,37 @@ export function UploadNote() {
 
       if (dbError) throw dbError;
 
+      // Send notification to student if one is selected
+      if (selectedStudent) {
+        const { data: studentData } = await supabase
+          .from('students')
+          .select('user_id')
+          .eq('id', selectedStudent)
+          .single();
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+
+        if (studentData?.user_id) {
+          try {
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                user_id: studentData.user_id,
+                type: 'note',
+                title: 'New Note Added',
+                message: `${profile?.display_name || 'Your teacher'} has shared a new note${title ? `: "${title}"` : ' with you'}.`,
+                data: { noteTitle: title }
+              }
+            });
+          } catch (notifError) {
+            console.error('Notification error:', notifError);
+          }
+        }
+      }
+
       toast.success('Note uploaded successfully');
       
       // Reset form
