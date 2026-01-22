@@ -155,7 +155,7 @@ export function StudentAssignments() {
       if (uploadError) throw uploadError;
 
       // Create submission record
-      const { error: insertError } = await supabase
+      const { data: submissionData, error: insertError } = await supabase
         .from('submissions')
         .insert({
           assignment_id: selectedAssignment.id,
@@ -164,9 +164,33 @@ export function StudentAssignments() {
           file_name: sanitizedName,
           file_path: filePath,
           status: 'submitted'
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
+
+      // Get student name for notification
+      const { data: student } = await supabase
+        .from('students')
+        .select('name')
+        .eq('id', studentId)
+        .single();
+
+      // Send notification to teacher
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'submission',
+            submissionId: submissionData.id,
+            assignmentTitle: selectedAssignment.title,
+            studentName: student?.name || 'A student'
+          }
+        });
+      } catch (notifError) {
+        console.error('Notification error:', notifError);
+        // Don't fail submission if notification fails
+      }
 
       toast.success('Assignment submitted successfully!');
       setSubmitDialogOpen(false);

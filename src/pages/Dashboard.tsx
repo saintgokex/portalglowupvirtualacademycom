@@ -8,9 +8,10 @@ import { UploadNote } from '@/components/teacher/UploadNote';
 import { UploadAssignment } from '@/components/teacher/UploadAssignment';
 import { LeaveApply } from '@/components/teacher/LeaveApply';
 import { MessageAdmin } from '@/components/teacher/MessageAdmin';
+import { ReviewSubmissions } from '@/components/teacher/ReviewSubmissions';
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   if (loading) {
@@ -25,10 +26,17 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
+  // Redirect students to their portal
+  if (hasRole('student')) {
+    return <Navigate to="/student" replace />;
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
         return <TeacherOverview />;
+      case 'review-submissions':
+        return <ReviewSubmissions />;
       case 'upload-report':
         return <UploadReport />;
       case 'upload-note':

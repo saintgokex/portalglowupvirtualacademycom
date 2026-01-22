@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface StudentSidebarProps {
   activeTab: string;
@@ -29,12 +30,17 @@ export function StudentSidebar({ activeTab, onTabChange }: StudentSidebarProps) 
 
   return (
     <aside className="flex h-screen w-20 md:w-56 flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo */}
-      <div className="flex items-center justify-center md:justify-start gap-2 px-4 py-5 border-b border-sidebar-border">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">
-          GU
+      {/* Logo + Notifications */}
+      <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
+        <div className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">
+            GU
+          </div>
+          <span className="hidden md:block text-lg font-semibold text-sidebar-foreground">STUDENT</span>
         </div>
-        <span className="hidden md:block text-lg font-semibold text-sidebar-foreground">STUDENT</span>
+        <div className="hidden md:block">
+          <NotificationBell />
+        </div>
       </div>
 
       {/* Navigation */}
