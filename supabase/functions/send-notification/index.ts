@@ -16,6 +16,17 @@ interface NotificationRequest {
   status?: string;
 }
 
+// HTML escape function to prevent XSS in emails
+function escapeHtml(text: string | undefined | null): string {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,11 +34,47 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
+
+    // Verify the caller's authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Missing token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create client with user's token to verify identity
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claims, error: claimsError } = await userSupabase.auth.getClaims(token);
+    
+    if (claimsError || !claims?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const callerId = claims.claims.sub;
+    console.log("Authenticated caller:", callerId);
+
+    // Use service role for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { type, submissionId, assignmentTitle, studentName, teacherName, feedback, status }: NotificationRequest = await req.json();
+
+    // Escape all user-provided content for HTML emails
+    const safeAssignmentTitle = escapeHtml(assignmentTitle);
+    const safeStudentName = escapeHtml(studentName);
+    const safeTeacherName = escapeHtml(teacherName);
+    const safeFeedback = escapeHtml(feedback);
 
     // Get submission details
     const { data: submission, error: subError } = await supabase
@@ -38,6 +85,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (subError || !submission) {
       throw new Error("Submission not found");
+    }
+
+    // Verify the caller is authorized (must be the teacher or student involved)
+    if (type === "submission") {
+      // Student submitting - verify caller has access to this submission
+      const { data: student } = await supabase
+        .from("students")
+        .select("user_id")
+        .eq("id", submission.student_id)
+        .single();
+      
+      if (student?.user_id !== callerId && submission.teacher_id !== callerId) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden - Not authorized for this submission" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    } else {
+      // Teacher giving feedback - verify caller is the teacher
+      if (submission.teacher_id !== callerId) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden - Only the assigned teacher can send feedback" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
     }
 
     // Get user emails for notification
@@ -53,10 +125,10 @@ const handler = async (req: Request): Promise<Response> => {
       recipientUserId = submission.teacher_id;
       notificationTitle = "New Assignment Submission";
       notificationMessage = `${studentName || "A student"} submitted their work for "${assignmentTitle}"`;
-      emailSubject = `New Submission: ${assignmentTitle}`;
+      emailSubject = `New Submission: ${safeAssignmentTitle}`;
       emailHtml = `
         <h1>New Assignment Submission</h1>
-        <p><strong>${studentName || "A student"}</strong> has submitted their work for <strong>"${assignmentTitle}"</strong>.</p>
+        <p><strong>${safeStudentName || "A student"}</strong> has submitted their work for <strong>"${safeAssignmentTitle}"</strong>.</p>
         <p>Please log in to review the submission and provide feedback.</p>
         <p>Best regards,<br>GlowUp Virtual Academy</p>
       `;
@@ -77,18 +149,18 @@ const handler = async (req: Request): Promise<Response> => {
       const statusText = status === "reviewed" ? "reviewed" : "needs revision";
       notificationTitle = "Assignment Feedback Received";
       notificationMessage = `${teacherName || "Your teacher"} has ${statusText} your submission for "${assignmentTitle}"${feedback ? `: "${feedback}"` : ""}`;
-      emailSubject = `Feedback on: ${assignmentTitle}`;
+      emailSubject = `Feedback on: ${safeAssignmentTitle}`;
       emailHtml = `
         <h1>Assignment Feedback</h1>
-        <p>Your teacher has reviewed your submission for <strong>"${assignmentTitle}"</strong>.</p>
+        <p>Your teacher has reviewed your submission for <strong>"${safeAssignmentTitle}"</strong>.</p>
         <p><strong>Status:</strong> ${status === "reviewed" ? "Reviewed ✓" : "Needs Revision"}</p>
-        ${feedback ? `<p><strong>Feedback:</strong> ${feedback}</p>` : ""}
+        ${safeFeedback ? `<p><strong>Feedback:</strong> ${safeFeedback}</p>` : ""}
         <p>Please log in to view the details.</p>
         <p>Best regards,<br>GlowUp Virtual Academy</p>
       `;
     }
 
-    // Create in-app notification
+    // Create in-app notification (using service role which has INSERT permission)
     const { error: notifError } = await supabase.from("notifications").insert({
       user_id: recipientUserId,
       type,
